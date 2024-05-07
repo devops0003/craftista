@@ -101,6 +101,7 @@ pipeline {
       }
       steps {
         dir(path: 'frontend') {
+          sh 'npm install'
           sh 'npm test'
         }
 
