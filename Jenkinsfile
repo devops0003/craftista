@@ -44,6 +44,7 @@ pipeline {
         echo 'compiling voting app..'
         dir(path: 'voting') {
           sh 'mvn package -DskipTests'
+          archiveArtifacts(artifacts: '**/target/*.jar', followSymlinks: false)
         }
 
       }
@@ -56,7 +57,7 @@ pipeline {
   post {
     always {
       echo 'pipeline run completed....'
-      archiveArtifacts(artifacts: '**/target/*.jar', followSymlinks: false)
+      
     }
 
   }
