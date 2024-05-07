@@ -1,7 +1,7 @@
 pipeline {
   agent none
   stages {
-    stage('voting-build') {
+    stage('Build Voting') {
       agent {
         docker {
           image 'maven:3.9.6-eclipse-temurin-17-alpine'
@@ -17,7 +17,7 @@ pipeline {
       }
     }
 
-    stage('voting-test') {
+    stage('Test Voting') {
       agent {
         docker {
           image 'maven:3.9.6-eclipse-temurin-17-alpine'
@@ -35,13 +35,15 @@ pipeline {
 
     stage('voting-package') {
       parallel {
-        stage('voting-package') {
-          when { branch 'main' }
+        stage('Package Voting') {
           agent {
             docker {
               image 'maven:3.9.6-eclipse-temurin-17-alpine'
             }
 
+          }
+          when {
+            branch 'main'
           }
           steps {
             echo 'compiling voting app..'
@@ -55,7 +57,9 @@ pipeline {
 
         stage('Voting Image B&P') {
           agent any
-          when { branch 'main' }
+          when {
+            branch 'main'
+          }
           steps {
             script {
               docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
@@ -67,6 +71,46 @@ pipeline {
               }
             }
 
+          }
+        }
+
+      }
+    }
+
+    stage('Build Frontend') {
+      agent {
+        docker {
+          image 'node:latest'
+        }
+
+      }
+      steps {
+        sh 'npm install'
+      }
+    }
+
+    stage('Test Frontend') {
+      agent {
+        docker {
+          image 'node:latest'
+        }
+
+      }
+      steps {
+        sh 'npm test'
+      }
+    }
+
+    stage('Frontend Image B&P') {
+      agent any
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
+            def commitHash = env.GIT_COMMIT.take(7)
+            def dockerImage = docker.build("initcron/craftista-frontend:${commitHash}", "./frontend")
+            dockerImage.push()
+            dockerImage.push("latest")
+            dockerImage.push("dev")
           }
         }
 
