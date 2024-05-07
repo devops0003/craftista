@@ -85,7 +85,10 @@ pipeline {
 
       }
       steps {
-        sh 'npm install'
+        dir(path: 'frontend') {
+          sh 'npm install'
+        }
+
       }
     }
 
@@ -97,7 +100,10 @@ pipeline {
 
       }
       steps {
-        sh 'npm test'
+        dir(path: 'frontend') {
+          sh 'npm test'
+        }
+
       }
     }
 
